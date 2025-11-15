@@ -1,0 +1,32 @@
+{
+  "name": "mcp-git-server",
+  "version": "1.1.0",
+  "description": "MCP server for Git operations that integrates with GitHub Copilot",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "node build.js",
+    "build:types": "tsc",
+    "start": "node dist/index.js",
+    "dev": "node build.js && node dist/index.js",
+    "watch": "tsc --watch",
+    "clean": "rm -rf dist && rm -f git-mcp_*.zip"
+  },
+  "keywords": [
+    "mcp",
+    "git",
+    "github-copilot",
+    "model-context-protocol"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "simple-git": "^3.25.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "esbuild": "^0.25.11",
+    "typescript": "^5.3.3"
+  }
+}

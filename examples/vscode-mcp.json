@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "git": {
+      "command": "node",
+      "args": ["/absolute/path/to/mcp-git-server/dist/index.js"]
+    }
+  }
+}
+

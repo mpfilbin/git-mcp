@@ -1,0 +1,231 @@
+#!/bin/bash
+
+set -e  # Exit on error
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+# Function to print colored output
+print_info() {
+    echo -e "${GREEN}[INFO]${NC} $1"
+}
+
+print_error() {
+    echo -e "${RED}[ERROR]${NC} $1"
+}
+
+print_warning() {
+    echo -e "${YELLOW}[WARNING]${NC} $1"
+}
+
+# Check if GHE_TOKEN is set
+if [ -z "$GHE_TOKEN" ]; then
+    print_error "GHE_TOKEN environment variable is not set. Please set it before running this script."
+    exit 1
+fi
+
+# Get current version from package.json
+CURRENT_VERSION=$(node -p "require('./package.json').version")
+print_info "Current version: $CURRENT_VERSION"
+
+# Parse current version
+IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT_VERSION"
+
+# Ask user for version bump type
+echo ""
+echo "Select version bump type:"
+echo "1) Major (breaking changes): $MAJOR.$MINOR.$PATCH -> $((MAJOR+1)).0.0"
+echo "2) Minor (new features): $MAJOR.$MINOR.$PATCH -> $MAJOR.$((MINOR+1)).0"
+echo "3) Patch (bug fixes): $MAJOR.$MINOR.$PATCH -> $MAJOR.$MINOR.$((PATCH+1))"
+echo ""
+read -p "Enter your choice (1, 2, or 3): " choice
+
+case $choice in
+    1)
+        NEW_VERSION="$((MAJOR+1)).0.0"
+        BUMP_TYPE="major"
+        ;;
+    2)
+        NEW_VERSION="$MAJOR.$((MINOR+1)).0"
+        BUMP_TYPE="minor"
+        ;;
+    3)
+        NEW_VERSION="$MAJOR.$MINOR.$((PATCH+1))"
+        BUMP_TYPE="patch"
+        ;;
+    *)
+        print_error "Invalid choice. Exiting."
+        exit 1
+        ;;
+esac
+
+print_info "Bumping version from $CURRENT_VERSION to $NEW_VERSION ($BUMP_TYPE)"
+
+# Update version in package.json
+node -e "
+const fs = require('fs');
+const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+pkg.version = '$NEW_VERSION';
+fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
+"
+
+print_info "Version updated in package.json"
+
+# Parse new version for file naming
+IFS='.' read -r NEW_MAJOR NEW_MINOR NEW_PATCH <<< "$NEW_VERSION"
+
+# Clean previous build artifacts
+print_info "Cleaning previous build artifacts..."
+npm run clean
+
+# Run build
+print_info "Running npm build..."
+npm run build
+
+if [ $? -ne 0 ]; then
+    print_error "Build failed. Exiting."
+    exit 1
+fi
+
+print_info "Build completed successfully"
+
+# Create zip file
+ZIP_FILENAME="git-mcp_${NEW_MAJOR}_${NEW_MINOR}_${NEW_PATCH}.zip"
+print_info "Creating archive: $ZIP_FILENAME"
+
+# Remove existing zip if it exists
+if [ -f "$ZIP_FILENAME" ]; then
+    rm "$ZIP_FILENAME"
+fi
+
+# Create zip archive with dist folder contents and README
+print_info "Adding dist folder contents..."
+cd dist
+zip -r "../$ZIP_FILENAME" ./*
+cd ..
+
+print_info "Adding README.md..."
+zip -u "$ZIP_FILENAME" README.md
+
+if [ ! -f "$ZIP_FILENAME" ]; then
+    print_error "Failed to create zip archive"
+    exit 1
+fi
+
+print_info "Archive created successfully: $ZIP_FILENAME"
+
+# Get repository information
+# Try to extract owner and repo from git remote
+GIT_REMOTE=$(git config --get remote.origin.url)
+
+# Initialize variables
+REPO_OWNER=""
+REPO_NAME=""
+GHE_HOST=""
+
+# Parse SSH format: git@hostname:owner/repo.git or git@hostname:owner/repo
+if [[ $GIT_REMOTE =~ ^git@([^:]+):([^/]+)/(.+)$ ]]; then
+    GHE_HOST="${BASH_REMATCH[1]}"
+    REPO_OWNER="${BASH_REMATCH[2]}"
+    REPO_NAME="${BASH_REMATCH[3]}"
+    # Remove .git extension if present
+    REPO_NAME="${REPO_NAME%.git}"
+# Parse HTTPS format: https://hostname/owner/repo.git or https://hostname/owner/repo
+elif [[ $GIT_REMOTE =~ ^https?://([^/]+)/([^/]+)/(.+)$ ]]; then
+    GHE_HOST="${BASH_REMATCH[1]}"
+    REPO_OWNER="${BASH_REMATCH[2]}"
+    REPO_NAME="${BASH_REMATCH[3]}"
+    # Remove .git extension if present
+    REPO_NAME="${REPO_NAME%.git}"
+else
+    print_error "Could not parse repository information from git remote: $GIT_REMOTE"
+    print_error "Supported formats:"
+    print_error "  - SSH: git@hostname:owner/repo.git"
+    print_error "  - HTTPS: https://hostname/owner/repo.git"
+    exit 1
+fi
+
+print_info "Repository: $REPO_OWNER/$REPO_NAME"
+print_info "Git host: $GHE_HOST"
+
+# Detect GitHub API endpoint (GitHub.com vs GitHub Enterprise)
+if [[ $GHE_HOST == "github.com" ]]; then
+    API_BASE="https://api.github.com"
+else
+    # GitHub Enterprise
+    API_BASE="https://$GHE_HOST/api/v3"
+    print_info "Using GitHub Enterprise API: $API_BASE"
+fi
+
+# Create release tag
+TAG_NAME="v$NEW_VERSION"
+print_info "Creating release: $TAG_NAME"
+
+# Create the release
+RELEASE_RESPONSE=$(curl -s -X POST \
+    -H "Authorization: token $GHE_TOKEN" \
+    -H "Accept: application/vnd.github.v3+json" \
+    "$API_BASE/repos/$REPO_OWNER/$REPO_NAME/releases" \
+    -d @- <<EOF
+{
+  "tag_name": "$TAG_NAME",
+  "name": "Release $NEW_VERSION",
+  "body": "Release $NEW_VERSION ($BUMP_TYPE)",
+  "draft": false,
+  "prerelease": false
+}
+EOF
+)
+
+# Check if release was created successfully
+RELEASE_ID=$(echo "$RELEASE_RESPONSE" | node -p "try { JSON.parse(require('fs').readFileSync(0, 'utf-8')).id } catch(e) { '' }")
+
+if [ -z "$RELEASE_ID" ]; then
+    print_error "Failed to create release"
+    echo "$RELEASE_RESPONSE" | node -p "JSON.parse(require('fs').readFileSync(0, 'utf-8')).message || 'Unknown error'"
+    exit 1
+fi
+
+print_info "Release created with ID: $RELEASE_ID"
+
+# Upload the zip file as a release asset
+print_info "Uploading $ZIP_FILENAME to release..."
+
+UPLOAD_URL=$(echo "$RELEASE_RESPONSE" | node -p "JSON.parse(require('fs').readFileSync(0, 'utf-8')).upload_url.replace(/\{.*\}/, '')")
+
+UPLOAD_RESPONSE=$(curl -s -X POST \
+    -H "Authorization: token $GHE_TOKEN" \
+    -H "Content-Type: application/zip" \
+    -H "Accept: application/vnd.github.v3+json" \
+    --data-binary "@$ZIP_FILENAME" \
+    "$UPLOAD_URL?name=$ZIP_FILENAME")
+
+# Check if upload was successful
+ASSET_ID=$(echo "$UPLOAD_RESPONSE" | node -p "try { JSON.parse(require('fs').readFileSync(0, 'utf-8')).id } catch(e) { '' }")
+
+if [ -z "$ASSET_ID" ]; then
+    print_error "Failed to upload release asset"
+    echo "$UPLOAD_RESPONSE" | node -p "JSON.parse(require('fs').readFileSync(0, 'utf-8')).message || 'Unknown error'"
+    exit 1
+fi
+
+print_info "Asset uploaded successfully with ID: $ASSET_ID"
+
+# Print summary
+echo ""
+print_info "=================================="
+print_info "Release completed successfully!"
+print_info "=================================="
+print_info "Version: $NEW_VERSION"
+print_info "Tag: $TAG_NAME"
+print_info "Archive: $ZIP_FILENAME"
+print_info "Release URL: https://github.com/$REPO_OWNER/$REPO_NAME/releases/tag/$TAG_NAME"
+echo ""
+print_warning "Don't forget to commit and push the package.json changes:"
+echo "  git add package.json"
+echo "  git commit -m 'Bump version to $NEW_VERSION'"
+echo "  git push origin master"
+
