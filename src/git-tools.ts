@@ -98,7 +98,7 @@ export async function gitClone(args: { url: string; targetPath?: string; repoPat
   try {
     const git = getGit(args.repoPath);
     const target = args.targetPath || path.basename(args.url, '.git');
-    
+
     await git.clone(args.url, target);
 
     return {
@@ -191,7 +191,7 @@ export async function gitCheckout(args: { ref: string; createBranch?: boolean; r
     if (error) return error;
 
     const git = getGit(args.repoPath);
-    
+
     if (args.createBranch) {
       await git.checkoutBranch(args.ref, 'HEAD');
     } else {
@@ -200,7 +200,7 @@ export async function gitCheckout(args: { ref: string; createBranch?: boolean; r
 
     return {
       success: true,
-      message: args.createBranch 
+      message: args.createBranch
         ? `Created and switched to branch '${args.ref}'`
         : `Switched to '${args.ref}'`
     };
@@ -219,7 +219,7 @@ export async function gitMerge(args: { branch: string; noFastForward?: boolean; 
 
     const git = getGit(args.repoPath);
     const options = args.noFastForward ? ['--no-ff'] : [];
-    
+
     const result = await git.merge([...options, args.branch]);
 
     return {
@@ -239,22 +239,53 @@ export async function gitMerge(args: { branch: string; noFastForward?: boolean; 
  * File Operations
  */
 
-export async function gitDiff(args: { files?: string[]; cached?: boolean; repoPath?: string }): Promise<GitOperationResponse> {
+export async function gitDiff(args: {
+  files?: string[];
+  cached?: boolean;
+  fromCommit?: string;
+  toCommit?: string;
+  useThreeDotRange?: boolean;
+  repoPath?: string
+}): Promise<GitOperationResponse> {
   try {
     const error = await verifyGitRepo(args.repoPath);
     if (error) return error;
 
     const git = getGit(args.repoPath);
-    
+
     let diff: string;
+    const diffArgs: string[] = [];
+
+    // Build the diff command arguments
     if (args.cached) {
-      diff = await git.diff(['--cached', ...(args.files || [])]);
-    } else {
-      diff = await git.diff(args.files || []);
+      diffArgs.push('--cached');
     }
 
-    // Also get diff summary
-    const diffSummary = await git.diffSummary(args.cached ? ['--cached'] : []);
+    // Handle commit ranges
+    if (args.fromCommit || args.toCommit) {
+      if (args.fromCommit && args.toCommit) {
+        // Both commits specified - use range
+        const rangeOperator = args.useThreeDotRange ? '...' : '..';
+        diffArgs.push(`${args.fromCommit}${rangeOperator}${args.toCommit}`);
+      } else if (args.fromCommit) {
+        // Only fromCommit specified - compare with working tree
+        diffArgs.push(args.fromCommit);
+      } else if (args.toCommit) {
+        // Only toCommit specified - compare with working tree (unusual but supported)
+        diffArgs.push(args.toCommit);
+      }
+    }
+
+    // Add files if specified
+    if (args.files && args.files.length > 0) {
+      diffArgs.push('--', ...args.files);
+    }
+
+    diff = await git.diff(diffArgs);
+
+    // Get diff summary with the same arguments (excluding the files separator)
+    const summaryArgs = diffArgs.filter(arg => arg !== '--');
+    const diffSummary = await git.diffSummary(summaryArgs);
 
     const data: DiffData = {
       files: diffSummary.files.map(f => ({
@@ -268,9 +299,23 @@ export async function gitDiff(args: { files?: string[]; cached?: boolean; repoPa
       changed: diffSummary.changed
     };
 
+    let message: string;
+    if (args.fromCommit && args.toCommit) {
+      const rangeOperator = args.useThreeDotRange ? '...' : '..';
+      message = `Diff for ${args.fromCommit}${rangeOperator}${args.toCommit}`;
+    } else if (args.fromCommit) {
+      message = `Diff from ${args.fromCommit} to working tree`;
+    } else if (args.toCommit) {
+      message = `Diff to ${args.toCommit}`;
+    } else if (args.cached) {
+      message = 'Diff for staged changes';
+    } else {
+      message = `Diff for ${args.files?.length || 'all'} file(s)`;
+    }
+
     return {
       success: true,
-      message: `Diff for ${args.files?.length || 'all'} file(s)`,
+      message,
       data: {
         summary: data,
         diff
@@ -310,7 +355,7 @@ export async function gitReset(args: { files?: string[]; mode?: 'soft' | 'mixed'
     if (error) return error;
 
     const git = getGit(args.repoPath);
-    
+
     if (args.files && args.files.length > 0) {
       // Unstage specific files
       const ref = args.commit || 'HEAD';
@@ -343,13 +388,13 @@ export async function gitRestore(args: { files: string[]; staged?: boolean; repo
     if (error) return error;
 
     const git = getGit(args.repoPath);
-    
+
     const options = args.staged ? ['--staged', ...args.files] : args.files;
     await git.raw(['restore', ...options]);
 
     return {
       success: true,
-      message: args.staged 
+      message: args.staged
         ? `Restored ${args.files.length} file(s) from staging`
         : `Restored ${args.files.length} file(s) from HEAD`
     };
@@ -371,12 +416,12 @@ export async function gitCommit(args: { message: string; files?: string[]; amend
     if (error) return error;
 
     const git = getGit(args.repoPath);
-    
+
     const options: any = {};
     if (args.amend) {
       options['--amend'] = null;
     }
-    
+
     let result;
     if (args.files && args.files.length > 0) {
       // Add files first, then commit
@@ -408,7 +453,7 @@ export async function gitLog(args: { maxCount?: number; file?: string; repoPath?
     if (error) return error;
 
     const git = getGit(args.repoPath);
-    
+
     const options: any = {};
     if (args.maxCount) {
       options.maxCount = args.maxCount;
@@ -416,7 +461,7 @@ export async function gitLog(args: { maxCount?: number; file?: string; repoPath?
     if (args.file) {
       options.file = args.file;
     }
-    
+
     const log: LogResult = await git.log(options);
 
     const commits: CommitInfo[] = log.all.map(commit => ({
@@ -447,7 +492,7 @@ export async function gitShow(args: { ref?: string; repoPath?: string }): Promis
 
     const git = getGit(args.repoPath);
     const ref = args.ref || 'HEAD';
-    
+
     const show = await git.show([ref]);
 
     return {
@@ -473,7 +518,7 @@ export async function gitRebase(args: { branch: string; interactive?: boolean; r
     if (error) return error;
 
     const git = getGit(args.repoPath);
-    
+
     const options = args.interactive ? ['-i', args.branch] : [args.branch];
     await git.rebase(options);
 
@@ -495,7 +540,7 @@ export async function gitStash(args: { message?: string; includeUntracked?: bool
     if (error) return error;
 
     const git = getGit(args.repoPath);
-    
+
     const options = ['push'];
     if (args.includeUntracked) {
       options.push('-u');
@@ -503,7 +548,7 @@ export async function gitStash(args: { message?: string; includeUntracked?: bool
     if (args.message) {
       options.push('-m', args.message);
     }
-    
+
     await git.stash(options);
 
     return {
@@ -524,17 +569,17 @@ export async function gitStashPop(args: { index?: number; repoPath?: string }): 
     if (error) return error;
 
     const git = getGit(args.repoPath);
-    
+
     const options = ['pop'];
     if (args.index !== undefined) {
       options.push(`stash@{${args.index}}`);
     }
-    
+
     await git.stash(options);
 
     return {
       success: true,
-      message: args.index !== undefined 
+      message: args.index !== undefined
         ? `Applied stash@{${args.index}}`
         : 'Applied most recent stash'
     };
@@ -646,7 +691,7 @@ export async function gitFetch(args: { remote?: string; branch?: string; repoPat
     if (error) return error;
 
     const git = getGit(args.repoPath);
-    
+
     if (args.remote && args.branch) {
       await git.fetch(args.remote, args.branch);
     } else if (args.remote) {
@@ -657,7 +702,7 @@ export async function gitFetch(args: { remote?: string; branch?: string; repoPat
 
     return {
       success: true,
-      message: args.remote 
+      message: args.remote
         ? `Fetched from '${args.remote}'${args.branch ? ` (${args.branch})` : ''}`
         : 'Fetched from all remotes'
     };
@@ -675,12 +720,12 @@ export async function gitPull(args: { remote?: string; branch?: string; rebase?:
     if (error) return error;
 
     const git = getGit(args.repoPath);
-    
+
     const options: any = {};
     if (args.rebase) {
       options['--rebase'] = null;
     }
-    
+
     await git.pull(args.remote, args.branch, options);
 
     return {
@@ -701,7 +746,7 @@ export async function gitPush(args: { remote?: string; branch?: string; force?: 
     if (error) return error;
 
     const git = getGit(args.repoPath);
-    
+
     const options: string[] = [];
     if (args.force) {
       options.push('--force');
@@ -709,7 +754,7 @@ export async function gitPush(args: { remote?: string; branch?: string; force?: 
     if (args.setUpstream) {
       options.push('--set-upstream');
     }
-    
+
     await git.push(args.remote, args.branch, options);
 
     return {

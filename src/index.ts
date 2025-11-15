@@ -183,7 +183,7 @@ const tools: Tool[] = [
   // File Operations
   {
     name: 'git_diff',
-    description: 'Show changes between commits, commit and working tree, etc',
+    description: 'Show changes between commits, commit and working tree, etc. Supports commit ranges like HEAD...origin/master',
     inputSchema: {
       type: 'object',
       properties: {
@@ -195,6 +195,18 @@ const tools: Tool[] = [
         cached: {
           type: 'boolean',
           description: 'Show diff of staged changes',
+        },
+        fromCommit: {
+          type: 'string',
+          description: 'Starting commit/branch for comparison (e.g., "HEAD", "main", commit hash)',
+        },
+        toCommit: {
+          type: 'string',
+          description: 'Ending commit/branch for comparison (e.g., "origin/master", commit hash). Defaults to working tree if not specified',
+        },
+        useThreeDotRange: {
+          type: 'boolean',
+          description: 'Use three-dot range (fromCommit...toCommit) to show changes on toCommit since it diverged from fromCommit',
         },
         repoPath: {
           type: 'string',
