@@ -2,7 +2,7 @@
 
 /**
  * MCP Git Server
- * 
+ *
  * An MCP server that exposes Git operations as tools for use with GitHub Copilot
  * in VS Code or IntelliJ.
  */
@@ -33,6 +33,9 @@ const tools: Tool[] = [
           description: 'Path to git repository (defaults to current directory)',
         },
       },
+    },
+    annotations: {
+      readOnly: true,
     },
   },
   {
@@ -84,6 +87,9 @@ const tools: Tool[] = [
         },
       },
     },
+    annotations: {
+      readOnly: true,
+    },
   },
   {
     name: 'git_branch_create',
@@ -123,6 +129,10 @@ const tools: Tool[] = [
         },
       },
       required: ['branchName'],
+    },
+    annotations: {
+      dangerous: true,
+      requiresConfirmation: true,
     },
   },
   {
@@ -192,6 +202,9 @@ const tools: Tool[] = [
         },
       },
     },
+    annotations: {
+      readOnly: true,
+    },
   },
   {
     name: 'git_add',
@@ -238,6 +251,10 @@ const tools: Tool[] = [
         },
       },
     },
+    annotations: {
+      dangerous: true,
+      requiresConfirmation: true,
+    },
   },
   {
     name: 'git_restore',
@@ -260,6 +277,10 @@ const tools: Tool[] = [
         },
       },
       required: ['files'],
+    },
+    annotations: {
+      dangerous: true,
+      requiresConfirmation: true,
     },
   },
 
@@ -311,6 +332,9 @@ const tools: Tool[] = [
         },
       },
     },
+    annotations: {
+      readOnly: true,
+    },
   },
   {
     name: 'git_show',
@@ -327,6 +351,9 @@ const tools: Tool[] = [
           description: 'Path to git repository (defaults to current directory)',
         },
       },
+    },
+    annotations: {
+      readOnly: true,
     },
   },
 
@@ -351,6 +378,10 @@ const tools: Tool[] = [
         },
       },
       required: ['branch'],
+    },
+    annotations: {
+      dangerous: true,
+      requiresConfirmation: true,
     },
   },
   {
@@ -403,6 +434,9 @@ const tools: Tool[] = [
         },
       },
     },
+    annotations: {
+      readOnly: true,
+    },
   },
   {
     name: 'git_cherry_pick',
@@ -435,6 +469,9 @@ const tools: Tool[] = [
           description: 'Path to git repository (defaults to current directory)',
         },
       },
+    },
+    annotations: {
+      readOnly: true,
     },
   },
   {
@@ -478,6 +515,9 @@ const tools: Tool[] = [
           description: 'Path to git repository (defaults to current directory)',
         },
       },
+    },
+    annotations: {
+      readOnly: true,
     },
   },
   {
@@ -533,6 +573,10 @@ const tools: Tool[] = [
         },
       },
     },
+    annotations: {
+      dangerous: true,
+      requiresConfirmation: true,
+    },
   },
 ];
 
@@ -544,32 +588,32 @@ const toolHandlers: Record<string, (args: any) => Promise<any>> = {
   git_status: gitTools.gitStatus,
   git_init: gitTools.gitInit,
   git_clone: gitTools.gitClone,
-  
+
   // Branch Operations
   git_branch_list: gitTools.gitBranchList,
   git_branch_create: gitTools.gitBranchCreate,
   git_branch_delete: gitTools.gitBranchDelete,
   git_checkout: gitTools.gitCheckout,
   git_merge: gitTools.gitMerge,
-  
+
   // File Operations
   git_diff: gitTools.gitDiff,
   git_add: gitTools.gitAdd,
   git_reset: gitTools.gitReset,
   git_restore: gitTools.gitRestore,
-  
+
   // Commit Operations
   git_commit: gitTools.gitCommit,
   git_log: gitTools.gitLog,
   git_show: gitTools.gitShow,
-  
+
   // Advanced Operations
   git_rebase: gitTools.gitRebase,
   git_stash: gitTools.gitStash,
   git_stash_pop: gitTools.gitStashPop,
   git_stash_list: gitTools.gitStashList,
   git_cherry_pick: gitTools.gitCherryPick,
-  
+
   // Remote Operations
   git_remote_list: gitTools.gitRemoteList,
   git_remote_add: gitTools.gitRemoteAdd,
@@ -654,7 +698,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  
+
   // Log to stderr since stdout is used for MCP communication
   console.error('MCP Git Server running on stdio');
 }
