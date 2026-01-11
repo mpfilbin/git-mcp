@@ -12,7 +12,7 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
-  Tool,
+  Tool
 } from '@modelcontextprotocol/sdk/types.js';
 
 import {
@@ -38,13 +38,13 @@ const tools: Tool[] = [
       properties: {
         repoPath: {
           type: 'string',
-          description: 'Path to git repository (defaults to current directory)',
-        },
-      },
+          description: 'Path to git repository (defaults to current directory)'
+        }
+      }
     },
     annotations: {
-      readOnly: true,
-    },
+      readOnly: true
+    }
   },
   {
     name: 'git_init',
@@ -54,10 +54,10 @@ const tools: Tool[] = [
       properties: {
         repoPath: {
           type: 'string',
-          description: 'Path where to initialize the repository (defaults to current directory)',
-        },
-      },
-    },
+          description: 'Path where to initialize the repository (defaults to current directory)'
+        }
+      }
+    }
   },
   {
     name: 'git_clone',
@@ -67,19 +67,19 @@ const tools: Tool[] = [
       properties: {
         url: {
           type: 'string',
-          description: 'The URL of the repository to clone',
+          description: 'The URL of the repository to clone'
         },
         targetPath: {
           type: 'string',
-          description: 'The path where to clone the repository',
+          description: 'The path where to clone the repository'
         },
         repoPath: {
           type: 'string',
-          description: 'Base path for the clone operation (defaults to current directory)',
-        },
+          description: 'Base path for the clone operation (defaults to current directory)'
+        }
       },
-      required: ['url'],
-    },
+      required: ['url']
+    }
   },
 
   // Branch Operations
@@ -91,13 +91,13 @@ const tools: Tool[] = [
       properties: {
         repoPath: {
           type: 'string',
-          description: 'Path to git repository (defaults to current directory)',
-        },
-      },
+          description: 'Path to git repository (defaults to current directory)'
+        }
+      }
     },
     annotations: {
-      readOnly: true,
-    },
+      readOnly: true
+    }
   },
   {
     name: 'git_branch_create',
@@ -107,15 +107,15 @@ const tools: Tool[] = [
       properties: {
         branchName: {
           type: 'string',
-          description: 'Name of the branch to create',
+          description: 'Name of the branch to create'
         },
         repoPath: {
           type: 'string',
-          description: 'Path to git repository (defaults to current directory)',
-        },
+          description: 'Path to git repository (defaults to current directory)'
+        }
       },
-      required: ['branchName'],
-    },
+      required: ['branchName']
+    }
   },
   {
     name: 'git_branch_delete',
@@ -125,23 +125,23 @@ const tools: Tool[] = [
       properties: {
         branchName: {
           type: 'string',
-          description: 'Name of the branch to delete',
+          description: 'Name of the branch to delete'
         },
         force: {
           type: 'boolean',
-          description: 'Force delete the branch even if not fully merged',
+          description: 'Force delete the branch even if not fully merged'
         },
         repoPath: {
           type: 'string',
-          description: 'Path to git repository (defaults to current directory)',
-        },
+          description: 'Path to git repository (defaults to current directory)'
+        }
       },
-      required: ['branchName'],
+      required: ['branchName']
     },
     annotations: {
       dangerous: true,
-      requiresConfirmation: true,
-    },
+      requiresConfirmation: true
+    }
   },
   {
     name: 'git_checkout',
@@ -151,19 +151,19 @@ const tools: Tool[] = [
       properties: {
         ref: {
           type: 'string',
-          description: 'The branch name, tag, or commit to checkout',
+          description: 'The branch name, tag, or commit to checkout'
         },
         createBranch: {
           type: 'boolean',
-          description: 'Create a new branch before checking out',
+          description: 'Create a new branch before checking out'
         },
         repoPath: {
           type: 'string',
-          description: 'Path to git repository (defaults to current directory)',
-        },
+          description: 'Path to git repository (defaults to current directory)'
+        }
       },
-      required: ['ref'],
-    },
+      required: ['ref']
+    }
   },
   {
     name: 'git_merge',
@@ -173,58 +173,61 @@ const tools: Tool[] = [
       properties: {
         branch: {
           type: 'string',
-          description: 'The branch to merge into the current branch',
+          description: 'The branch to merge into the current branch'
         },
         noFastForward: {
           type: 'boolean',
-          description: 'Create a merge commit even when the merge resolves as a fast-forward',
+          description: 'Create a merge commit even when the merge resolves as a fast-forward'
         },
         repoPath: {
           type: 'string',
-          description: 'Path to git repository (defaults to current directory)',
-        },
+          description: 'Path to git repository (defaults to current directory)'
+        }
       },
-      required: ['branch'],
-    },
+      required: ['branch']
+    }
   },
 
   // File Operations
   {
     name: 'git_diff',
-    description: 'Show changes between commits, commit and working tree, etc. Supports commit ranges like HEAD...origin/master',
+    description:
+      'Show changes between commits, commit and working tree, etc. Supports commit ranges like HEAD...origin/master',
     inputSchema: {
       type: 'object',
       properties: {
         files: {
           type: 'array',
           items: { type: 'string' },
-          description: 'Specific files to show diff for (defaults to all files)',
+          description: 'Specific files to show diff for (defaults to all files)'
         },
         cached: {
           type: 'boolean',
-          description: 'Show diff of staged changes',
+          description: 'Show diff of staged changes'
         },
         fromCommit: {
           type: 'string',
-          description: 'Starting commit/branch for comparison (e.g., "HEAD", "main", commit hash)',
+          description: 'Starting commit/branch for comparison (e.g., "HEAD", "main", commit hash)'
         },
         toCommit: {
           type: 'string',
-          description: 'Ending commit/branch for comparison (e.g., "origin/master", commit hash). Defaults to working tree if not specified',
+          description:
+            'Ending commit/branch for comparison (e.g., "origin/master", commit hash). Defaults to working tree if not specified'
         },
         useThreeDotRange: {
           type: 'boolean',
-          description: 'Use three-dot range (fromCommit...toCommit) to show changes on toCommit since it diverged from fromCommit',
+          description:
+            'Use three-dot range (fromCommit...toCommit) to show changes on toCommit since it diverged from fromCommit'
         },
         repoPath: {
           type: 'string',
-          description: 'Path to git repository (defaults to current directory)',
-        },
-      },
+          description: 'Path to git repository (defaults to current directory)'
+        }
+      }
     },
     annotations: {
-      readOnly: true,
-    },
+      readOnly: true
+    }
   },
   {
     name: 'git_add',
@@ -235,15 +238,15 @@ const tools: Tool[] = [
         files: {
           type: 'array',
           items: { type: 'string' },
-          description: 'Files to stage (use ["."] to stage all files)',
+          description: 'Files to stage (use ["."] to stage all files)'
         },
         repoPath: {
           type: 'string',
-          description: 'Path to git repository (defaults to current directory)',
-        },
+          description: 'Path to git repository (defaults to current directory)'
+        }
       },
-      required: ['files'],
-    },
+      required: ['files']
+    }
   },
   {
     name: 'git_reset',
@@ -254,27 +257,28 @@ const tools: Tool[] = [
         files: {
           type: 'array',
           items: { type: 'string' },
-          description: 'Specific files to unstage (if not provided, resets to commit)',
+          description: 'Specific files to unstage (if not provided, resets to commit)'
         },
         mode: {
           type: 'string',
           enum: ['soft', 'mixed', 'hard'],
-          description: 'Reset mode: soft (keep changes staged), mixed (keep changes unstaged), hard (discard changes)',
+          description:
+            'Reset mode: soft (keep changes staged), mixed (keep changes unstaged), hard (discard changes)'
         },
         commit: {
           type: 'string',
-          description: 'Commit hash or reference to reset to (defaults to HEAD)',
+          description: 'Commit hash or reference to reset to (defaults to HEAD)'
         },
         repoPath: {
           type: 'string',
-          description: 'Path to git repository (defaults to current directory)',
-        },
-      },
+          description: 'Path to git repository (defaults to current directory)'
+        }
+      }
     },
     annotations: {
       dangerous: true,
-      requiresConfirmation: true,
-    },
+      requiresConfirmation: true
+    }
   },
   {
     name: 'git_restore',
@@ -285,23 +289,23 @@ const tools: Tool[] = [
         files: {
           type: 'array',
           items: { type: 'string' },
-          description: 'Files to restore',
+          description: 'Files to restore'
         },
         staged: {
           type: 'boolean',
-          description: 'Restore files in the staging area',
+          description: 'Restore files in the staging area'
         },
         repoPath: {
           type: 'string',
-          description: 'Path to git repository (defaults to current directory)',
-        },
+          description: 'Path to git repository (defaults to current directory)'
+        }
       },
-      required: ['files'],
+      required: ['files']
     },
     annotations: {
       dangerous: true,
-      requiresConfirmation: true,
-    },
+      requiresConfirmation: true
+    }
   },
 
   // Commit Operations
@@ -313,24 +317,24 @@ const tools: Tool[] = [
       properties: {
         message: {
           type: 'string',
-          description: 'Commit message',
+          description: 'Commit message'
         },
         files: {
           type: 'array',
           items: { type: 'string' },
-          description: 'Specific files to commit (will be staged automatically)',
+          description: 'Specific files to commit (will be staged automatically)'
         },
         amend: {
           type: 'boolean',
-          description: 'Amend the previous commit',
+          description: 'Amend the previous commit'
         },
         repoPath: {
           type: 'string',
-          description: 'Path to git repository (defaults to current directory)',
-        },
+          description: 'Path to git repository (defaults to current directory)'
+        }
       },
-      required: ['message'],
-    },
+      required: ['message']
+    }
   },
   {
     name: 'git_log',
@@ -340,21 +344,21 @@ const tools: Tool[] = [
       properties: {
         maxCount: {
           type: 'number',
-          description: 'Maximum number of commits to show',
+          description: 'Maximum number of commits to show'
         },
         file: {
           type: 'string',
-          description: 'Show commits for a specific file',
+          description: 'Show commits for a specific file'
         },
         repoPath: {
           type: 'string',
-          description: 'Path to git repository (defaults to current directory)',
-        },
-      },
+          description: 'Path to git repository (defaults to current directory)'
+        }
+      }
     },
     annotations: {
-      readOnly: true,
-    },
+      readOnly: true
+    }
   },
   {
     name: 'git_show',
@@ -364,17 +368,17 @@ const tools: Tool[] = [
       properties: {
         ref: {
           type: 'string',
-          description: 'The commit reference to show (defaults to HEAD)',
+          description: 'The commit reference to show (defaults to HEAD)'
         },
         repoPath: {
           type: 'string',
-          description: 'Path to git repository (defaults to current directory)',
-        },
-      },
+          description: 'Path to git repository (defaults to current directory)'
+        }
+      }
     },
     annotations: {
-      readOnly: true,
-    },
+      readOnly: true
+    }
   },
 
   // Advanced Operations
@@ -386,23 +390,23 @@ const tools: Tool[] = [
       properties: {
         branch: {
           type: 'string',
-          description: 'The branch to rebase onto',
+          description: 'The branch to rebase onto'
         },
         interactive: {
           type: 'boolean',
-          description: 'Start an interactive rebase',
+          description: 'Start an interactive rebase'
         },
         repoPath: {
           type: 'string',
-          description: 'Path to git repository (defaults to current directory)',
-        },
+          description: 'Path to git repository (defaults to current directory)'
+        }
       },
-      required: ['branch'],
+      required: ['branch']
     },
     annotations: {
       dangerous: true,
-      requiresConfirmation: true,
-    },
+      requiresConfirmation: true
+    }
   },
   {
     name: 'git_stash',
@@ -412,18 +416,18 @@ const tools: Tool[] = [
       properties: {
         message: {
           type: 'string',
-          description: 'Message to describe the stash',
+          description: 'Message to describe the stash'
         },
         includeUntracked: {
           type: 'boolean',
-          description: 'Include untracked files in the stash',
+          description: 'Include untracked files in the stash'
         },
         repoPath: {
           type: 'string',
-          description: 'Path to git repository (defaults to current directory)',
-        },
-      },
-    },
+          description: 'Path to git repository (defaults to current directory)'
+        }
+      }
+    }
   },
   {
     name: 'git_stash_pop',
@@ -433,14 +437,14 @@ const tools: Tool[] = [
       properties: {
         index: {
           type: 'number',
-          description: 'Index of the stash to pop (defaults to most recent)',
+          description: 'Index of the stash to pop (defaults to most recent)'
         },
         repoPath: {
           type: 'string',
-          description: 'Path to git repository (defaults to current directory)',
-        },
-      },
-    },
+          description: 'Path to git repository (defaults to current directory)'
+        }
+      }
+    }
   },
   {
     name: 'git_stash_list',
@@ -450,13 +454,13 @@ const tools: Tool[] = [
       properties: {
         repoPath: {
           type: 'string',
-          description: 'Path to git repository (defaults to current directory)',
-        },
-      },
+          description: 'Path to git repository (defaults to current directory)'
+        }
+      }
     },
     annotations: {
-      readOnly: true,
-    },
+      readOnly: true
+    }
   },
   {
     name: 'git_cherry_pick',
@@ -466,15 +470,15 @@ const tools: Tool[] = [
       properties: {
         commit: {
           type: 'string',
-          description: 'The commit hash to cherry-pick',
+          description: 'The commit hash to cherry-pick'
         },
         repoPath: {
           type: 'string',
-          description: 'Path to git repository (defaults to current directory)',
-        },
+          description: 'Path to git repository (defaults to current directory)'
+        }
       },
-      required: ['commit'],
-    },
+      required: ['commit']
+    }
   },
 
   // Remote Operations
@@ -486,13 +490,13 @@ const tools: Tool[] = [
       properties: {
         repoPath: {
           type: 'string',
-          description: 'Path to git repository (defaults to current directory)',
-        },
-      },
+          description: 'Path to git repository (defaults to current directory)'
+        }
+      }
     },
     annotations: {
-      readOnly: true,
-    },
+      readOnly: true
+    }
   },
   {
     name: 'git_remote_add',
@@ -502,19 +506,19 @@ const tools: Tool[] = [
       properties: {
         name: {
           type: 'string',
-          description: 'Name of the remote',
+          description: 'Name of the remote'
         },
         url: {
           type: 'string',
-          description: 'URL of the remote repository',
+          description: 'URL of the remote repository'
         },
         repoPath: {
           type: 'string',
-          description: 'Path to git repository (defaults to current directory)',
-        },
+          description: 'Path to git repository (defaults to current directory)'
+        }
       },
-      required: ['name', 'url'],
-    },
+      required: ['name', 'url']
+    }
   },
   {
     name: 'git_fetch',
@@ -524,21 +528,21 @@ const tools: Tool[] = [
       properties: {
         remote: {
           type: 'string',
-          description: 'Name of the remote to fetch from',
+          description: 'Name of the remote to fetch from'
         },
         branch: {
           type: 'string',
-          description: 'Specific branch to fetch',
+          description: 'Specific branch to fetch'
         },
         repoPath: {
           type: 'string',
-          description: 'Path to git repository (defaults to current directory)',
-        },
-      },
+          description: 'Path to git repository (defaults to current directory)'
+        }
+      }
     },
     annotations: {
-      readOnly: true,
-    },
+      readOnly: true
+    }
   },
   {
     name: 'git_pull',
@@ -548,22 +552,22 @@ const tools: Tool[] = [
       properties: {
         remote: {
           type: 'string',
-          description: 'Name of the remote to pull from',
+          description: 'Name of the remote to pull from'
         },
         branch: {
           type: 'string',
-          description: 'Branch to pull',
+          description: 'Branch to pull'
         },
         rebase: {
           type: 'boolean',
-          description: 'Rebase instead of merge',
+          description: 'Rebase instead of merge'
         },
         repoPath: {
           type: 'string',
-          description: 'Path to git repository (defaults to current directory)',
-        },
-      },
-    },
+          description: 'Path to git repository (defaults to current directory)'
+        }
+      }
+    }
   },
   {
     name: 'git_push',
@@ -573,31 +577,31 @@ const tools: Tool[] = [
       properties: {
         remote: {
           type: 'string',
-          description: 'Name of the remote to push to',
+          description: 'Name of the remote to push to'
         },
         branch: {
           type: 'string',
-          description: 'Branch to push',
+          description: 'Branch to push'
         },
         force: {
           type: 'boolean',
-          description: 'Force push',
+          description: 'Force push'
         },
         setUpstream: {
           type: 'boolean',
-          description: 'Set upstream tracking',
+          description: 'Set upstream tracking'
         },
         repoPath: {
           type: 'string',
-          description: 'Path to git repository (defaults to current directory)',
-        },
-      },
+          description: 'Path to git repository (defaults to current directory)'
+        }
+      }
     },
     annotations: {
       dangerous: true,
-      requiresConfirmation: true,
-    },
-  },
+      requiresConfirmation: true
+    }
+  }
 ];
 
 /**
@@ -606,11 +610,14 @@ const tools: Tool[] = [
 
 // Configure all operation modules with the Git provider factory
 const { gitStatus, gitInit, gitClone } = configureRepositoryManagement(getGit);
-const { gitBranchList, gitBranchCreate, gitBranchDelete, gitCheckout, gitMerge } = configureBranchOperations(getGit);
+const { gitBranchList, gitBranchCreate, gitBranchDelete, gitCheckout, gitMerge } =
+  configureBranchOperations(getGit);
 const { gitDiff, gitAdd, gitReset, gitRestore } = configureFileOperations(getGit);
 const { gitCommit, gitLog, gitShow } = configureCommitOperations(getGit);
-const { gitRebase, gitStash, gitStashPop, gitStashList, gitCherryPick } = configureAdvancedOperations(getGit);
-const { gitRemoteList, gitRemoteAdd, gitFetch, gitPull, gitPush } = configureRemoteOperations(getGit);
+const { gitRebase, gitStash, gitStashPop, gitStashList, gitCherryPick } =
+  configureAdvancedOperations(getGit);
+const { gitRemoteList, gitRemoteAdd, gitFetch, gitPull, gitPush } =
+  configureRemoteOperations(getGit);
 
 const toolHandlers: Record<string, (args: any) => Promise<any>> = {
   // Repository Management
@@ -648,7 +655,7 @@ const toolHandlers: Record<string, (args: any) => Promise<any>> = {
   git_remote_add: gitRemoteAdd,
   git_fetch: gitFetch,
   git_pull: gitPull,
-  git_push: gitPush,
+  git_push: gitPush
 };
 
 /**
@@ -657,12 +664,12 @@ const toolHandlers: Record<string, (args: any) => Promise<any>> = {
 const server = new Server(
   {
     name: 'mcp-git-server',
-    version: '1.0.0',
+    version: '1.0.0'
   },
   {
     capabilities: {
-      tools: {},
-    },
+      tools: {}
+    }
   }
 );
 
@@ -671,14 +678,14 @@ const server = new Server(
  */
 server.setRequestHandler(ListToolsRequestSchema, async () => {
   return {
-    tools,
+    tools
   };
 });
 
 /**
  * Handler for tool execution
  */
-server.setRequestHandler(CallToolRequestSchema, async (request) => {
+server.setRequestHandler(CallToolRequestSchema, async request => {
   const { name, arguments: args } = request.params;
 
   const handler = toolHandlers[name];
@@ -689,10 +696,10 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           type: 'text',
           text: JSON.stringify({
             success: false,
-            message: `Unknown tool: ${name}`,
-          }),
-        },
-      ],
+            message: `Unknown tool: ${name}`
+          })
+        }
+      ]
     };
   }
 
@@ -702,9 +709,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       content: [
         {
           type: 'text',
-          text: JSON.stringify(result, null, 2),
-        },
-      ],
+          text: JSON.stringify(result, null, 2)
+        }
+      ]
     };
   } catch (error: any) {
     return {
@@ -713,10 +720,10 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           type: 'text',
           text: JSON.stringify({
             success: false,
-            message: `Error executing tool: ${error.message}`,
-          }),
-        },
-      ],
+            message: `Error executing tool: ${error.message}`
+          })
+        }
+      ]
     };
   }
 });
@@ -732,8 +739,7 @@ async function main() {
   console.error('MCP Git Server running on stdio');
 }
 
-main().catch((error) => {
+main().catch(error => {
   console.error('Fatal error in main():', error);
   process.exit(1);
 });
-

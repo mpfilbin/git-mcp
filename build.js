@@ -5,20 +5,16 @@
  * This bundles all dependencies into a single file for easy distribution
  */
 
-import * as esbuild from 'esbuild';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
-import {
+const esbuild = require('esbuild');
+const { join } = require('path');
+const {
   readFileSync,
   writeFileSync,
   chmodSync,
   rmSync,
   readdirSync,
-  existsSync,
-} from 'fs';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+  existsSync
+} = require('fs');
 
 const distDir = join(__dirname, 'dist');
 
@@ -27,7 +23,7 @@ function removeUnwantedDistArtifacts() {
 
   rmSync(join(distDir, 'package.json'), { force: true });
 
-  const removeIdeaDirs = (dir) => {
+  const removeIdeaDirs = dir => {
     for (const entry of readdirSync(dir, { withFileTypes: true })) {
       if (!entry.isDirectory()) continue;
       const fullPath = join(dir, entry.name);
@@ -63,7 +59,7 @@ async function build() {
       external: [],
       packages: 'bundle',
       mainFields: ['main', 'module'],
-      logLevel: 'info',
+      logLevel: 'info'
     });
 
     // Read the bundled output and handle shebang

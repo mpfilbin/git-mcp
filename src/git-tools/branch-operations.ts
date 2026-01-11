@@ -2,15 +2,22 @@
  * Branch Operations
  */
 
-import {GitOperationResponse, GitProviderFactory, GitBranchInfo, GitBranchSummary} from '../providers/git-provider';
+import {
+  GitOperationResponse,
+  GitBranchInfo,
+  GitBranchSummary,
+  GitProviderFactoryImplementing
+} from '../providers/git-provider';
 
-export const configureBranchOperations = (getGit: GitProviderFactory) => ({
+export const configureBranchOperations = (
+  getGit: GitProviderFactoryImplementing<'branch' | 'checkoutBranch' | 'checkout' | 'merge'>
+) => ({
   gitBranchList: async (args: { repoPath?: string }): Promise<GitOperationResponse> => {
     try {
       const git = await getGit({ repoPath: args.repoPath });
       const branches: GitBranchSummary = await git.branch();
 
-      const data: Omit<GitBranchInfo, "label">[] = branches.all.map(name => ({
+      const data: Omit<GitBranchInfo, 'label'>[] = branches.all.map(name => ({
         name,
         current: name === branches.current,
         commit: branches.branches[name]?.commit || ''
@@ -29,7 +36,10 @@ export const configureBranchOperations = (getGit: GitProviderFactory) => ({
     }
   },
 
-  gitBranchCreate: async (args: { branchName: string; repoPath?: string }): Promise<GitOperationResponse> => {
+  gitBranchCreate: async (args: {
+    branchName: string;
+    repoPath?: string;
+  }): Promise<GitOperationResponse> => {
     try {
       const git = await getGit({ repoPath: args.repoPath });
       await git.branch([args.branchName]);
@@ -46,7 +56,11 @@ export const configureBranchOperations = (getGit: GitProviderFactory) => ({
     }
   },
 
-  gitBranchDelete: async (args: { branchName: string; force?: boolean; repoPath?: string }): Promise<GitOperationResponse> => {
+  gitBranchDelete: async (args: {
+    branchName: string;
+    force?: boolean;
+    repoPath?: string;
+  }): Promise<GitOperationResponse> => {
     try {
       const git = await getGit({ repoPath: args.repoPath });
       const deleteFlag = args.force ? '-D' : '-d';
@@ -64,7 +78,11 @@ export const configureBranchOperations = (getGit: GitProviderFactory) => ({
     }
   },
 
-  gitCheckout: async (args: { ref: string; createBranch?: boolean; repoPath?: string }): Promise<GitOperationResponse> => {
+  gitCheckout: async (args: {
+    ref: string;
+    createBranch?: boolean;
+    repoPath?: string;
+  }): Promise<GitOperationResponse> => {
     try {
       const git = await getGit({ repoPath: args.repoPath });
 
@@ -88,7 +106,11 @@ export const configureBranchOperations = (getGit: GitProviderFactory) => ({
     }
   },
 
-  gitMerge: async (args: { branch: string; noFastForward?: boolean; repoPath?: string }): Promise<GitOperationResponse> => {
+  gitMerge: async (args: {
+    branch: string;
+    noFastForward?: boolean;
+    repoPath?: string;
+  }): Promise<GitOperationResponse> => {
     try {
       const git = await getGit({ repoPath: args.repoPath });
       const options = args.noFastForward ? ['--no-ff'] : [];

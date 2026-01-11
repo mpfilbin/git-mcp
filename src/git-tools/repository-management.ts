@@ -2,7 +2,11 @@
  * Repository Management Tools
  */
 
-import {GitOperationResponse, GitProviderFactory, GitStatus} from '../providers/git-provider';
+import {
+  GitOperationResponse,
+  GitProviderFactoryImplementing,
+  GitStatus
+} from '../providers/git-provider';
 import * as path from 'path';
 
 export interface StatusData {
@@ -20,9 +24,9 @@ export interface StatusData {
   isClean: boolean;
 }
 
-
-
-export const configureRepositoryManagement = (getGit: GitProviderFactory) => ({
+export const configureRepositoryManagement = (
+  getGit: GitProviderFactoryImplementing<'status' | 'init' | 'clone'>
+) => ({
   gitStatus: async (args: { repoPath?: string }): Promise<GitOperationResponse> => {
     try {
       const git = await getGit({ repoPath: args.repoPath });
@@ -73,7 +77,11 @@ export const configureRepositoryManagement = (getGit: GitProviderFactory) => ({
     }
   },
 
-  gitClone: async (args: { url: string; targetPath?: string; repoPath?: string }): Promise<GitOperationResponse> => {
+  gitClone: async (args: {
+    url: string;
+    targetPath?: string;
+    repoPath?: string;
+  }): Promise<GitOperationResponse> => {
     try {
       const git = await getGit({ repoPath: args.repoPath, required: false });
       const target = args.targetPath || path.basename(args.url, '.git');

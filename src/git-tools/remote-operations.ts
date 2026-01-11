@@ -2,9 +2,15 @@
  * Remote Operations
  */
 
-import {GitOperationResponse, GitProviderFactory, GitRemote} from '../providers/git-provider';
+import {
+  GitOperationResponse,
+  GitProviderFactoryImplementing,
+  GitRemote
+} from '../providers/git-provider';
 
-export const configureRemoteOperations = (getGit: GitProviderFactory) => ({
+export const configureRemoteOperations = (
+  getGit: GitProviderFactoryImplementing<'getRemotes' | 'addRemote' | 'fetch' | 'pull' | 'push'>
+) => ({
   gitRemoteList: async (args: { repoPath?: string }): Promise<GitOperationResponse> => {
     try {
       const git = await getGit({ repoPath: args.repoPath });
@@ -31,7 +37,11 @@ export const configureRemoteOperations = (getGit: GitProviderFactory) => ({
     }
   },
 
-  gitRemoteAdd: async (args: { name: string; url: string; repoPath?: string }): Promise<GitOperationResponse> => {
+  gitRemoteAdd: async (args: {
+    name: string;
+    url: string;
+    repoPath?: string;
+  }): Promise<GitOperationResponse> => {
     try {
       const git = await getGit({ repoPath: args.repoPath });
       await git.addRemote(args.name, args.url);
@@ -48,7 +58,11 @@ export const configureRemoteOperations = (getGit: GitProviderFactory) => ({
     }
   },
 
-  gitFetch: async (args: { remote?: string; branch?: string; repoPath?: string }): Promise<GitOperationResponse> => {
+  gitFetch: async (args: {
+    remote?: string;
+    branch?: string;
+    repoPath?: string;
+  }): Promise<GitOperationResponse> => {
     try {
       const git = await getGit({ repoPath: args.repoPath });
 
@@ -74,7 +88,12 @@ export const configureRemoteOperations = (getGit: GitProviderFactory) => ({
     }
   },
 
-  gitPull: async (args: { remote?: string; branch?: string; rebase?: boolean; repoPath?: string }): Promise<GitOperationResponse> => {
+  gitPull: async (args: {
+    remote?: string;
+    branch?: string;
+    rebase?: boolean;
+    repoPath?: string;
+  }): Promise<GitOperationResponse> => {
     try {
       const git = await getGit({ repoPath: args.repoPath });
 
@@ -97,7 +116,13 @@ export const configureRemoteOperations = (getGit: GitProviderFactory) => ({
     }
   },
 
-  gitPush: async (args: { remote?: string; branch?: string; force?: boolean; setUpstream?: boolean; repoPath?: string }): Promise<GitOperationResponse> => {
+  gitPush: async (args: {
+    remote?: string;
+    branch?: string;
+    force?: boolean;
+    setUpstream?: boolean;
+    repoPath?: string;
+  }): Promise<GitOperationResponse> => {
     try {
       const git = await getGit({ repoPath: args.repoPath });
 

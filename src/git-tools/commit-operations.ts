@@ -2,10 +2,22 @@
  * Commit Operations
  */
 
-import {GitProviderFactory, GitOperationResponse, GitLogResult, GitCommit} from '../providers/git-provider';
+import {
+  GitOperationResponse,
+  GitLogResult,
+  GitCommit,
+  GitProviderFactoryImplementing
+} from '../providers/git-provider';
 
-export const configureCommitOperations = (getGit: GitProviderFactory) => ({
-  gitCommit: async (args: { message: string; files?: string[]; amend?: boolean; repoPath?: string }): Promise<GitOperationResponse> => {
+export const configureCommitOperations = (
+  getGit: GitProviderFactoryImplementing<'commit' | 'log' | 'show' | 'add'>
+) => ({
+  gitCommit: async (args: {
+    message: string;
+    files?: string[];
+    amend?: boolean;
+    repoPath?: string;
+  }): Promise<GitOperationResponse> => {
     try {
       const git = await getGit({ repoPath: args.repoPath });
 
@@ -39,7 +51,11 @@ export const configureCommitOperations = (getGit: GitProviderFactory) => ({
     }
   },
 
-  gitLog: async (args: { maxCount?: number; file?: string; repoPath?: string }): Promise<GitOperationResponse> => {
+  gitLog: async (args: {
+    maxCount?: number;
+    file?: string;
+    repoPath?: string;
+  }): Promise<GitOperationResponse> => {
     try {
       const git = await getGit({ repoPath: args.repoPath });
 
@@ -53,7 +69,7 @@ export const configureCommitOperations = (getGit: GitProviderFactory) => ({
 
       const log: GitLogResult = await git.log(options);
 
-      const commits: Omit<GitCommit, "body" | "refs">[] = log.all.map(commit => ({
+      const commits: Omit<GitCommit, 'body' | 'refs'>[] = log.all.map(commit => ({
         hash: commit.hash,
         date: commit.date,
         message: commit.message,

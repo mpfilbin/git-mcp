@@ -5,13 +5,11 @@
  * This interface defines all Git operations used by the MCP Git Server without depending on simple-git.
  */
 
-
 export interface GitOperationResponse {
   success: boolean;
   message: string;
   data?: any;
 }
-
 
 /**
  * Status information for a Git repository
@@ -314,4 +312,14 @@ export interface GitProvider {
 /**
  * Factory function type for creating GitProvider instances
  */
-export type GitProviderFactory = (args: { repoPath?: string, required?: boolean}) => Promise<GitProvider>;
+export type GitProviderFactory = (args: {
+  repoPath?: string;
+  required?: boolean;
+}) => Promise<GitProvider>;
+
+export type GitProviderFactoryImplementing<TInterface extends keyof GitProvider> = (args: {
+  repoPath?: string;
+  required?: boolean;
+}) => Promise<Pick<GitProvider, TInterface>>;
+
+// I would like to have a type like:
