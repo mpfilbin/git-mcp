@@ -86,7 +86,7 @@ Response:
 {
   "tool": "git_add",
   "arguments": {
-    "files": ["src/index.ts", "src/utils.ts", "README.md"]
+    "files": ["src/index.ts", "src/simple-git.ts", "README.md"]
   }
 }
 ```
@@ -95,7 +95,7 @@ Response:
 ```json
 {
   "success": true,
-  "message": "Staged 3 file(s): src/index.ts, src/utils.ts, README.md"
+  "message": "Staged 3 file(s): src/index.ts, src/simple-git.ts, README.md"
 }
 ```
 

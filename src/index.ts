@@ -15,7 +15,15 @@ import {
   Tool,
 } from '@modelcontextprotocol/sdk/types.js';
 
-import * as gitTools from './git-tools.js';
+import {
+  configureRepositoryManagement,
+  configureBranchOperations,
+  configureFileOperations,
+  configureCommitOperations,
+  configureAdvancedOperations,
+  configureRemoteOperations
+} from './git-tools';
+import { getGit } from './providers/simple-git/simple-git';
 
 /**
  * Tool definitions for the MCP server
@@ -595,43 +603,52 @@ const tools: Tool[] = [
 /**
  * Map tool names to their implementation functions
  */
+
+// Configure all operation modules with the Git provider factory
+const { gitStatus, gitInit, gitClone } = configureRepositoryManagement(getGit);
+const { gitBranchList, gitBranchCreate, gitBranchDelete, gitCheckout, gitMerge } = configureBranchOperations(getGit);
+const { gitDiff, gitAdd, gitReset, gitRestore } = configureFileOperations(getGit);
+const { gitCommit, gitLog, gitShow } = configureCommitOperations(getGit);
+const { gitRebase, gitStash, gitStashPop, gitStashList, gitCherryPick } = configureAdvancedOperations(getGit);
+const { gitRemoteList, gitRemoteAdd, gitFetch, gitPull, gitPush } = configureRemoteOperations(getGit);
+
 const toolHandlers: Record<string, (args: any) => Promise<any>> = {
   // Repository Management
-  git_status: gitTools.gitStatus,
-  git_init: gitTools.gitInit,
-  git_clone: gitTools.gitClone,
+  git_status: gitStatus,
+  git_init: gitInit,
+  git_clone: gitClone,
 
   // Branch Operations
-  git_branch_list: gitTools.gitBranchList,
-  git_branch_create: gitTools.gitBranchCreate,
-  git_branch_delete: gitTools.gitBranchDelete,
-  git_checkout: gitTools.gitCheckout,
-  git_merge: gitTools.gitMerge,
+  git_branch_list: gitBranchList,
+  git_branch_create: gitBranchCreate,
+  git_branch_delete: gitBranchDelete,
+  git_checkout: gitCheckout,
+  git_merge: gitMerge,
 
   // File Operations
-  git_diff: gitTools.gitDiff,
-  git_add: gitTools.gitAdd,
-  git_reset: gitTools.gitReset,
-  git_restore: gitTools.gitRestore,
+  git_diff: gitDiff,
+  git_add: gitAdd,
+  git_reset: gitReset,
+  git_restore: gitRestore,
 
   // Commit Operations
-  git_commit: gitTools.gitCommit,
-  git_log: gitTools.gitLog,
-  git_show: gitTools.gitShow,
+  git_commit: gitCommit,
+  git_log: gitLog,
+  git_show: gitShow,
 
   // Advanced Operations
-  git_rebase: gitTools.gitRebase,
-  git_stash: gitTools.gitStash,
-  git_stash_pop: gitTools.gitStashPop,
-  git_stash_list: gitTools.gitStashList,
-  git_cherry_pick: gitTools.gitCherryPick,
+  git_rebase: gitRebase,
+  git_stash: gitStash,
+  git_stash_pop: gitStashPop,
+  git_stash_list: gitStashList,
+  git_cherry_pick: gitCherryPick,
 
   // Remote Operations
-  git_remote_list: gitTools.gitRemoteList,
-  git_remote_add: gitTools.gitRemoteAdd,
-  git_fetch: gitTools.gitFetch,
-  git_pull: gitTools.gitPull,
-  git_push: gitTools.gitPush,
+  git_remote_list: gitRemoteList,
+  git_remote_add: gitRemoteAdd,
+  git_fetch: gitFetch,
+  git_pull: gitPull,
+  git_push: gitPush,
 };
 
 /**
