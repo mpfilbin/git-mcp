@@ -11,6 +11,7 @@
     "watch": "tsc --watch",
     "inspect": "npx @modelcontextprotocol/inspector node ./dist/index.js",
     "clean": "rm -rf dist && rm -f git-mcp_*.zip",
+    "install:mcp": "node scripts/install.js",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",

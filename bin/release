@@ -21,9 +21,9 @@ print_warning() {
     echo -e "${YELLOW}[WARNING]${NC} $1"
 }
 
-# Check if GHE_TOKEN is set
-if [ -z "$GHE_TOKEN" ]; then
-    print_error "GHE_TOKEN environment variable is not set. Please set it before running this script."
+# Check if GITHUB_TOKEN is set
+if [ -z "$GITHUB_TOKEN" ]; then
+    print_error "GITHUB_TOKEN environment variable is not set. Please set it before running this script."
     exit 1
 fi
 
@@ -124,18 +124,18 @@ GIT_REMOTE=$(git config --get remote.origin.url)
 # Initialize variables
 REPO_OWNER=""
 REPO_NAME=""
-GHE_HOST=""
+GITHUB_HOST=""
 
 # Parse SSH format: git@hostname:owner/repo.git or git@hostname:owner/repo
 if [[ $GIT_REMOTE =~ ^git@([^:]+):([^/]+)/(.+)$ ]]; then
-    GHE_HOST="${BASH_REMATCH[1]}"
+    GITHUB_HOST="${BASH_REMATCH[1]}"
     REPO_OWNER="${BASH_REMATCH[2]}"
     REPO_NAME="${BASH_REMATCH[3]}"
     # Remove .git extension if present
     REPO_NAME="${REPO_NAME%.git}"
 # Parse HTTPS format: https://hostname/owner/repo.git or https://hostname/owner/repo
 elif [[ $GIT_REMOTE =~ ^https?://([^/]+)/([^/]+)/(.+)$ ]]; then
-    GHE_HOST="${BASH_REMATCH[1]}"
+    GITHUB_HOST="${BASH_REMATCH[1]}"
     REPO_OWNER="${BASH_REMATCH[2]}"
     REPO_NAME="${BASH_REMATCH[3]}"
     # Remove .git extension if present
@@ -149,14 +149,14 @@ else
 fi
 
 print_info "Repository: $REPO_OWNER/$REPO_NAME"
-print_info "Git host: $GHE_HOST"
+print_info "Git host: $GITHUB_HOST"
 
 # Detect GitHub API endpoint (GitHub.com vs GitHub Enterprise)
-if [[ $GHE_HOST == "github.com" ]]; then
+if [[ $GITHUB_HOST == "github.com" ]]; then
     API_BASE="https://api.github.com"
 else
     # GitHub Enterprise
-    API_BASE="https://$GHE_HOST/api/v3"
+    API_BASE="https://$GITHUB_HOST/api/v3"
     print_info "Using GitHub Enterprise API: $API_BASE"
 fi
 
