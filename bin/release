@@ -166,7 +166,7 @@ print_info "Creating release: $TAG_NAME"
 
 # Create the release
 RELEASE_RESPONSE=$(curl -s -X POST \
-    -H "Authorization: token $GHE_TOKEN" \
+    -H "Authorization: token $GITHUB_TOKEN" \
     -H "Accept: application/vnd.github.v3+json" \
     "$API_BASE/repos/$REPO_OWNER/$REPO_NAME/releases" \
     -d @- <<EOF
@@ -197,7 +197,7 @@ print_info "Uploading $ZIP_FILENAME to release..."
 UPLOAD_URL=$(echo "$RELEASE_RESPONSE" | node -p "JSON.parse(require('fs').readFileSync(0, 'utf-8')).upload_url.replace(/\{.*\}/, '')")
 
 UPLOAD_RESPONSE=$(curl -s -X POST \
-    -H "Authorization: token $GHE_TOKEN" \
+    -H "Authorization: token $GITHUB_TOKEN" \
     -H "Content-Type: application/zip" \
     -H "Accept: application/vnd.github.v3+json" \
     --data-binary "@$ZIP_FILENAME" \
