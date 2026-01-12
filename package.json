@@ -2,7 +2,6 @@
   "name": "mcp-git-server",
   "version": "1.1.0",
   "description": "MCP server for Git operations that integrates with GitHub Copilot",
-  "type": "module",
   "main": "dist/index.js",
   "scripts": {
     "build": "node build.js",
@@ -10,7 +9,16 @@
     "start": "node dist/index.js",
     "dev": "node build.js && node dist/index.js",
     "watch": "tsc --watch",
-    "clean": "rm -rf dist && rm -f git-mcp_*.zip"
+    "inspect": "npx @modelcontextprotocol/inspector node ./dist/index.js",
+    "clean": "rm -rf dist && rm -f git-mcp_*.zip",
+    "install:mcp": "node scripts/install.js",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "format:check": "prettier --check \"src/**/*.ts\"",
+    "lint": "eslint \"src/**/*.ts\"",
+    "lint:fix": "eslint \"src/**/*.ts\" --fix"
   },
   "keywords": [
     "mcp",
@@ -25,8 +33,18 @@
     "simple-git": "^3.25.0"
   },
   "devDependencies": {
+    "@jest/globals": "^30.2.0",
+    "@types/jest": "^30.0.0",
     "@types/node": "^20.11.0",
+    "@typescript-eslint/eslint-plugin": "^8.52.0",
+    "@typescript-eslint/parser": "^8.52.0",
     "esbuild": "^0.25.11",
+    "eslint": "^9.39.2",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.4",
+    "jest": "^30.2.0",
+    "prettier": "^3.7.4",
+    "ts-jest": "^29.4.6",
     "typescript": "^5.3.3"
   }
 }
