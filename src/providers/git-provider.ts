@@ -321,5 +321,3 @@ export type GitProviderFactoryImplementing<TInterface extends keyof GitProvider>
   repoPath?: string;
   required?: boolean;
 }) => Promise<Pick<GitProvider, TInterface>>;
-
-// I would like to have a type like:
